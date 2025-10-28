@@ -96,6 +96,7 @@ If chosen, it performs both scans with retry logic to ensure system integrity.
         - Navigate to the [Releases](https://github.com/hexagonal717/wushowhidetoolalt/releases) page of the repository.
         - Download the latest release.
         - Extract the ZIP file to access the `WUShowHideToolAlt`.
+    <!--
     - **To download as a ZIP file:**
         - On the main repository page, click the **Code** button and select **Download ZIP**.
         - Extract the ZIP file to access the `WUShowHideToolAlt`.
@@ -105,43 +106,71 @@ If chosen, it performs both scans with retry logic to ensure system integrity.
           ```bash
           git clone https://github.com/hexagonal717/wushowhidetoolalt
           ```
+   
         - This will clone the entire repository to your local machine, and you can access the `WUShowHideToolAlt`.
+   
+    -->
+2. **Download Display Driver Uninstaller (DDU):**
+    - Before running the script, make sure you have **Display Driver Uninstaller (DDU)** downloaded and ready.
+    - You will need it later during the Safe Mode phase.
+    - Download from the official source: [Wagnardsoft DDU](https://www.wagnardsoft.com/).
+    - Extract the downloaded ZIP file to a safe location, such as your desktop or documents folder.
 
-2. **Ensure an Internet Connection:**
+3. **Ensure an Internet Connection:**
     - The script depends on Windows Update to retrieve the old drivers from the server so that it can block the old drivers.
 
-3. **Pause Windows Update:**
+4. **Pause Windows Update:**
     - Go to Settings > Windows Update > Pause (pause for 1 week).
 
-4. **Run the `run_this.bat` file**:
+5. **Run the `run_this.bat` file**:
     - Locate the `run_this.bat` file in the directory where you extracted or cloned the repository.
     - Double-click the `run_this.bat` file to execute it. This file will run the PowerShell script with the necessary permissions.
     - If Windows SmartScreen appears, warning you that the file might be unsafe, follow these steps to bypass it:
        - Click on **More info**.
        - Then click **Run anyway**.
        - The script will then execute with the necessary permissions.
-5. **Install `PSWindowsUpdate` Module:**
-    - If prompted, type `Y` and press enter.
 
-6. **Let the Script Run:**
-    - The script will perform its tasks automatically and create a scheduled task for future automatic executions.
-    - The script will take around 4-5 minutes to finish executing. Be patient.
+6. **Let the Script Run**
 
-7. **Important! Run DDU (Display Driver Uninstaller):**
-    - Follow the instructions in the video below:
-      `(Do the DDU safe mode method.)`
-        - [How to download and use DDU (Display Driver Uninstaller)](https://youtu.be/1XlwirtWs_c?si=aw5g3N4NUi8TGURM&t=142)
+    - Once started, the script will automatically perform several steps:
+        - Check for Administrator rights and relaunch if necessary.
+        - Prompt you to pause Windows Update before continuing.
+        - Offer to run Disk Cleanup — choose **Y** if you want to clean temporary and update-related files.
+        - Disable Delivery Optimization and prepare Safe Mode cleanup scripts.
 
-8. **Download and Install the Appropriate GPU Driver After Reboot:**
+    - Your system will then **reboot into Safe Mode automatically** to perform cleanup:
+        - In Safe Mode, the script will ask if you want to reset the Windows Update folders  
+          (`SoftwareDistribution` and `catroot2`).
+            - Press **Y** and hit **Enter** to delete and reset them.
+        - After that, the script will show **DDU instructions**.
+        - Run **Display Driver Uninstaller (DDU)**, choose the GPU to want to clean and select **“Clean and do not restart”**.
+        - After completing DDU, return to the PowerShell window and press **Enter** — the system will reboot back to normal mode.
+        - ⚠️ **If you accidentally close the PowerShell window in Safe Mode:**
+            - Delete the file `C:\SafeModeCleanupRan.flag`.
+            - Then manually run `C:\SafeModeCleanup.ps1` as Administrator to continue the cleanup process.
+
+    - After reboot, the **PostCleanup phase** will start automatically —  
+      **Wait patiently** for a few seconds. You’ll see a **UAC prompt** asking for Administrator permission.
+        - Click **Yes** when prompted.
+        - The PostCleanup script will then:
+            - Restore system settings and services.
+            - Re-enable Delivery Optimization.
+            - **Install the `PSWindowsUpdate` PowerShell module (if not already installed).**
+              - If prompted, type **Y** and press **Enter** to allow installation.
+            - Create the permanent `C:\HideOldGPUDriversFromWU.ps1` script.
+            - Register a scheduled task **HideGPUDriversFromWU** to hide GPU drivers automatically.
+            - Optionally offer to run **DISM** and **SFC** scans for system health.
+
+    - When everything finishes, you’ll see a completion message.  
+      Reboot once more if prompted, then install your latest GPU drivers.
+7. **Download and Install the Appropriate GPU Driver After Reboot:**
     - Download the latest GPU driver from the respective links:
         - **AMD**: [AMD Drivers](https://www.amd.com/en/support/download/drivers.html)
             - ***Also download Chipset drivers along with GPU drivers for AMD.***
         - **Nvidia**: [Nvidia Drivers](https://www.nvidia.com/download/index.aspx)
         - **Intel**: [Intel Drivers](https://www.intel.com/content/www/us/en/download-center/home.html)
-
-9. **Enable / Resume Windows Update back in Settings**
-
-10. **Verify the Task and Script:**
+8. **Enable / Resume Windows Update back in Settings**
+9. **Verify the Task and Script:**
     - If everything is done correctly, there will be a `HideOldGPUDriversFromWU.ps1` file in the ***root of your C: Drive*** and a task named `HideOldGPUDriversFromWU` in ***Task Scheduler***.
 
     ### `HideOldGPUDriversFromWU.ps1` file in C: Drive:

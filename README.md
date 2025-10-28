@@ -14,42 +14,77 @@ Maintaining a Windows system often involves repetitive tasks that can be tedious
 
 This script performs a series of maintenance tasks on a Windows system, including cleaning up temporary files, disabling Delivery Optimization, and hiding old GPU drivers from Windows Update. The script performs the following actions:
 
-1. **Administrative Privileges Check**: Ensures the script is running with administrative privileges. If not, it restarts itself with elevated permissions.
-2. **Disk Cleanup**: Configures and runs the Disk Cleanup tool (`cleanmgr`) with specific cleanup options.
-3. **Delivery Optimization Service**: Disables the Delivery Optimization service temporarily to prevent unnecessary background data transfer from interrupting the script.
-4. **SoftwareDistribution Folder Cleanup**: Takes full ownership, cleans up the SoftwareDistribution folder, and restores default ownership.
-5. **GPU Driver Hiding**: Installs the PSWindowsUpdate module (if not already installed) and hides old GPU drivers from Windows Update.
-6. **Scheduled Task Creation**: Saves the script to C: drive and schedules it to run at logon to hide old GPU drivers.
+1. **Administrative Privileges Check**: Ensures the script is running as Administrator, auto-relaunching with elevated permissions if needed.
+2. **Driver Search Configuration**: Disables automatic driver fetching from Windows Update (`SearchOrderConfig = 0`).
+3. **User Guidance Before Proceeding**: Prompts the user to manually pause Windows Update to prevent interference.
+4. **Optional Disk Cleanup**: Offers to run Disk Cleanup (`cleanmgr`) with selected cleanup categories like Delivery Optimization, Error Reports, Temporary Files, and Update Cleanup.
+5. **Delivery Optimization Disable**: Temporarily disables the Delivery Optimization service (`DoSvc`) to stop unwanted background updates.
+6. **Safe Mode Cleanup**:
+    - Configures the system to reboot into Safe Mode.
+    - Performs Windows Update folder reset (`SoftwareDistribution`, `catroot2`).
+    - Optionally deletes older reset folders.
+    - Displays detailed **DDU (Display Driver Uninstaller)** instructions for safe GPU driver removal.
+7. **PostCleanup Stage**:
+    - Automatically runs after reboot (via `RunOnce` entry).
+    - Restores normal boot mode and Delivery Optimization.
+    - Re-enables essential services.
+    - Creates a persistent GPU hiding script and task.
+8. **Permanent GPU Driver Hiding Script**:
+    - Saves `C:\HideOldGPUDriversFromWU.ps1`.
+    - Uses the `PSWindowsUpdate` module to detect and hide all GPU-related updates from Windows Update.
+    - Sets a **system-level scheduled task** (`HideGPUDriversFromWU`) to run this script automatically at every logon.
+9. **System Health Verification (Optional)**:
+    - Offers to run full **DISM** and **SFC** scans for system integrity after cleanup.
+    - Includes retry logic for both commands to ensure reliable execution.
+10. **Final Cleanup**:
+    - Removes temporary cleanup scripts, logs, and flags.
+    - Restores system boot and cleanup environment to normal.
 
 ---
 
 ## Script Components
 
 ### 1. Administrative Privileges Check
-The script first checks if it's running as an administrator. If not, it attempts to restart with elevated privileges.
+Automatically detects if PowerShell is running with elevated permissions.  
+If not, it restarts itself as Administrator using `Start-Process -Verb RunAs`.
 
-### 2. Disk Cleanup
-The script sets specific cleanup options and runs `cleanmgr` to perform disk cleanup. After cleanup, it removes the state flags from the registry.
+### 2. Driver Update Control
+Modifies Windows Registry (`HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching`) to prevent Windows from automatically installing drivers via Windows Update.
 
-### 3. Delivery Optimization Service
-The script temporarily disables the Delivery Optimization service by setting its startup type to 'Disabled' and then re-enables it after cleaning up the SoftwareDistribution folder.
+### 3. Disk Cleanup (Optional)
+Configures specific `cleanmgr` cleanup profiles and removes unnecessary files like Delivery Optimization data, temporary setup files, and update leftovers.
 
-### 4. SoftwareDistribution Folder Cleanup
-The script stops Windows Update services, takes ownership of the `SoftwareDistribution` folder, deletes its contents with a retry mechanism, and restores the folder’s ownership to default settings.
+### 4. Delivery Optimization Service
+Disables the `DoSvc` service to prevent unwanted background driver downloads during cleanup and Safe Mode operations.  
+Later restored in the PostCleanup phase.
 
-### 5. GPU Driver Hiding
-The script installs and uses the `PSWindowsUpdate` module to hide old GPU drivers from Windows Update.
+### 5. Safe Mode Cleanup
+Automatically schedules the system to boot into Safe Mode (Minimal).  
+Performs secure Windows Update folder resets and allows the user to delete old backup folders.  
+Displays step-by-step DDU instructions for GPU driver removal.
 
-### 6. Scheduled Task Creation
-A scheduled task is created to run a PowerShell script at logon that hides old GPU drivers from Windows Update.
+### 6. PostCleanup Stage
+Runs automatically after reboot.  
+Restores the system’s normal boot state, cleans flags, restarts services, and runs the GPU hiding automation setup.
+
+### 7. GPU Driver Hiding Automation
+Creates a persistent script `C:\HideOldGPUDriversFromWU.ps1` that hides all GPU-related updates using the `PSWindowsUpdate` module.  
+A scheduled task `HideGPUDriversFromWU` ensures this script runs at every logon under SYSTEM privileges.
+
+### 8. DISM and SFC Health Checks
+Offers to run `DISM.exe /Online /Cleanup-Image /RestoreHealth` and `sfc /scannow` after cleanup.  
+If chosen, it performs both scans with retry logic to ensure system integrity.
 
 ---
 
 ## Prerequisites
 
-- PowerShell
-- Administrative privileges
-- `PSWindowsUpdate` PowerShell module (installed by the script if not present)
+- Windows 10 / 11 with PowerShell
+- Administrator privileges
+- Internet connection (for module installation and update retrieval)
+- `PSWindowsUpdate` PowerShell module (installed automatically if missing)
+- **Display Driver Uninstaller (DDU)** for safe GPU cleanup
+    - Download from: [Official DDU Page (Wagnardsoft)](https://www.wagnardsoft.com/)
 
 ---
 

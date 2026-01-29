@@ -1,5 +1,9 @@
 # WUShowHideToolAlt
 
+**Disclaimer: This script is provided for educational and personal use only.
+I am not responsible for any damage, data loss, or issues caused by using it.
+Please review the code carefully and use it at your own risk.**
+
 ## Why I Created This Project
 
 ### Background:
